@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from sentry.models import OrganizationOption
+from sentry.models import OrganizationOption, ProjectOption
 from sentry.quotas.base import Quota
 from sentry.testutils import TestCase
 
@@ -28,3 +28,17 @@ class QuotaTest(TestCase):
 
             with self.options({'system.rate-limit': 0}):
                 assert self.backend.get_project_quota(project) == (0, 60)
+
+            ProjectOption.objects.set_value(
+                project, 'quotas:rate-limit', (5, 60),
+            )
+
+            with self.options({'system.rate-limit': 100}):
+                assert self.backend.get_project_quota(project) == (5, 60)
+
+            ProjectOption.objects.set_value(
+                project, 'quotas:rate-limit', (90, 60),
+            )
+
+            with self.options({'system.rate-limit': 100}):
+                assert self.backend.get_project_quota(project) == (80, 60)

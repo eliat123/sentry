@@ -36,6 +36,15 @@ class ProjectOptionManager(BaseManager):
         assert instance_id
         return '%s:%s' % (self.model._meta.db_table, instance_id)
 
+    def _validate_key(self, key, value):
+        """
+        Basic type checking on options to prevent obvious mistakes.
+        """
+
+        if key == 'quotas:rate-limit':
+            if value and len(value) != 2:
+                raise ValueError
+
     def get_value_bulk(self, instances, key):
         instance_map = dict((i.id, i) for i in instances)
         queryset = self.filter(
@@ -56,6 +65,7 @@ class ProjectOptionManager(BaseManager):
         self.reload_cache(project.id)
 
     def set_value(self, project, key, value):
+        self._validate_key(key, value)
         self.create_or_update(
             project=project,
             key=key,
