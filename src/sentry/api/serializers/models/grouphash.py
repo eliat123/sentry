@@ -6,12 +6,15 @@ from sentry.api.serializers import Serializer, register, serialize
 from sentry.models import Event, GroupHash
 
 
-def bulk_fetch_events_by_event_id(event_ids):
+def bulk_fetch_events_by_event_id(project_id, event_ids):
     return map(
         {
             event.event_id: event
             for event in
-            Event.objects.filter(event_id__in=event_ids)
+            Event.objects.filter(
+                project_id=project_id,
+                event_id__in=event_ids,
+            )
         }.get,
         event_ids,
     )
@@ -44,6 +47,7 @@ def get_latest_events(instances):
                     zip(
                         group_hash_ids,
                         bulk_fetch_events_by_event_id(
+                            project_id,
                             GroupHash.fetch_last_processed_event_id(
                                 project_id,
                                 group_hash_ids,
