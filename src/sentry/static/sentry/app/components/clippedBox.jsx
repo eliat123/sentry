@@ -27,7 +27,7 @@ const ClippedBox = React.createClass({
   componentDidMount() {
     let renderedHeight = ReactDOM.findDOMNode(this).offsetHeight;
 
-    if (renderedHeight > this.props.clipHeight) {
+    if (!this.state.clipped && renderedHeight > this.props.clipHeight) {
       /*eslint react/no-did-mount-set-state:0*/
       // okay if this causes re-render; cannot determine until
       // rendered first anyways
@@ -56,7 +56,9 @@ const ClippedBox = React.createClass({
     }
 
     return (
-      <div className={className}>
+      <div
+        className={className}
+        style={{maxHeight: this.state.clipped ? this.props.clipHeight : null}}>
         {this.props.title && <h5>{this.props.title}</h5>}
         {this.props.children}
 
